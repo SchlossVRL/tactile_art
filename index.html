@@ -55,6 +55,7 @@
 
         // Set background color to gray
         document.body.style.backgroundColor = "rgb(128,128,128)";
+        //document.body.style.backgroundColor = "rgb(90,90,90)";
 
 
         /* ------------------------------
@@ -266,7 +267,7 @@
         ------------------------------ */
         const trials = randomized_sets.map(t => ({
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<img src="${t.participant_img}" style="max-width:40vw; max-height:40vh;">`,
+            stimulus: `<img src="${t.participant_img}" style="max-width:512px; max-height:512px;">`,
             choices: "NO_KEYS",
 
             data: {
@@ -292,7 +293,7 @@
 
         const trials2 = randomized_sets2.map(t => ({
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<img src="${t.participant_img}" style="max-width:40vw; max-height:40vh;">`,
+            stimulus: `<img src="${t.participant_img}" style="max-width:512px; max-height:512px;">`,
             choices: "NO_KEYS",
 
             data: {
