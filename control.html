@@ -62,79 +62,44 @@
 </head>
 
 <body>
-
     <div class="page-container">
-
         <!-- Shared instruction above both images -->
-
         <div class="instruction">
-
-            Select the texture painting that best matches the color painting.
-
+            Experimenter: "You may now touch the texture paintings.""
         </div>
-
         <div class="container">
-
             <div class="option">
-
                 <p class="option-label">Left</p>
-
                 <img id="left" onclick="sendResponse('left')">
-
             </div>
-
             <div class="option">
-
                 <p class="option-label">Right</p>
-
                 <img id="right" onclick="sendResponse('right')">
-
             </div>
-
         </div>
-
     </div>
-
     <script>
-
         /* ------------------------------
-
            Receive trial updates
-
         ------------------------------ */
 
         window.addEventListener("message", (event) => {
-
             if (event.data.type === "update_trial") {
-
                 document.getElementById("left").src = event.data.left_img;
-
                 document.getElementById("right").src = event.data.right_img;
-
             }
-
         });
 
         /* ------------------------------
-
            Send responses
-
         ------------------------------ */
-
         function sendResponse(direction) {
-
             window.opener.postMessage(
-
                 { type: "response", value: direction },
-
                 "*"
-
             );
-
         }
-
     </script>
-
 </body>
 
 </html>
