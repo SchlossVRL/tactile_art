@@ -79,62 +79,56 @@
             {
                 id: 1,
                 participant_img: "images/C1.png",
-                left_img: "images/1A.png",
-                right_img: "images/1B.png"
+                A_img: "images/1A.png",
+                B_img: "images/1B.png"
             },
             {
                 id: 2,
                 participant_img: "images/C2.png",
-                left_img: "images/2A.png",
-                right_img: "images/2B.png"
+                A_img: "images/2A.png",
+                B_img: "images/2B.png"
             },
             {
                 id: 3,
                 participant_img: "images/C3.png",
-                left_img: "images/3A.png",
-                right_img: "images/3B.png"
+                A_img: "images/3A.png",
+                B_img: "images/3B.png"
             },
             {
                 id: 4,
                 participant_img: "images/C4.png",
-                left_img: "images/4A.png",
-                right_img: "images/4B.png"
+                A_img: "images/4A.png",
+                B_img: "images/4B.png"
             },
             {
                 id: 5,
                 participant_img: "images/C5.png",
-                left_img: "images/5A.png",
-                right_img: "images/5B.png"
+                A_img: "images/5A.png",
+                B_img: "images/5B.png"
             },
             {
                 id: 6,
                 participant_img: "images/C6.png",
-                left_img: "images/6A.png",
-                right_img: "images/6B.png"
+                A_img: "images/6A.png",
+                B_img: "images/6B.png"
             },
             {
                 id: 7,
                 participant_img: "images/C7.png",
-                left_img: "images/7A.png",
-                right_img: "images/7B.png"
+                A_img: "images/7A.png",
+                B_img: "images/7B.png"
             },
             {
                 id: 8,
                 participant_img: "images/C8.png",
-                left_img: "images/8A.png",
-                right_img: "images/8B.png"
+                A_img: "images/8A.png",
+                B_img: "images/8B.png"
             },
             {
                 id: 9,
                 participant_img: "images/C9.png",
-                left_img: "images/9A.png",
-                right_img: "images/9B.png"
-            },
-            {
-                id: 10,
-                participant_img: "images/C_practice.png",
-                left_img: "images/practiceA.png",
-                right_img: "images/practiceB.png"
+                A_img: "images/9A.png",
+                B_img: "images/9B.png"
             }
         ];
 
@@ -198,7 +192,7 @@
         ------------------------------ */
 
         const end = makeBreakTrial({
-            id: 1000,
+            id: 1002,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 Thank you for your participation, you have completed the experimental trials. 
                 <br><br> You may now remove your headphones so the experimenter can provide next steps.
@@ -208,7 +202,7 @@
         });
 
         const thank_you = makeBreakTrial({
-            id: 1001,
+            id: 1003,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 Data file saved. Thank you!
             </div>`,
@@ -226,12 +220,53 @@
             }
         ];*/
         /* ------------------------------
-           Randomize trial order
+           Randomize trial order and sides
         ------------------------------ */
-        const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
 
-        //repetition
-        const randomized_sets2 = jsPsych.randomization.shuffle(trial_sets);
+        // Create four blocks
+
+        const blocks = [];
+
+        for (let block = 1; block <= 4; block++) {
+
+            // Randomize trial order
+            const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
+            const block_trials = randomized_sets.map(t => ({
+                ...t,
+                block: block
+            }));
+            blocks.push(block_trials);
+        }
+
+        // Balance A/B sides across four blocks
+
+        trial_sets.forEach(t => {
+
+            // Each painting gets A on the left twice and right twice
+            const side_assignments = jsPsych.randomization.shuffle([
+                "left", "left", "right", "right"
+            ]);
+
+            blocks.forEach((block, index) => {
+                const trial = block.find(bt => bt.id === t.id);
+                trial.A_side = side_assignments[index];
+                trial.left_img = trial.A_side === "left" ? t.A_img : t.B_img;
+                trial.right_img = trial.A_side === "left" ? t.B_img : t.A_img;
+            });
+        });
+
+        // Check side balance
+        trial_sets.forEach(t => {
+            const sides = blocks.map(block =>
+                block.find(bt => bt.id === t.id).A_side
+            );
+            console.log(
+                `Painting ${t.id}:`,
+                sides,
+                `Left: ${sides.filter(s => s === "left").length}`,
+                `Right: ${sides.filter(s => s === "right").length}`
+            );
+        });
 
         /* ------------------------------
            Open experimenter window
@@ -263,70 +298,64 @@
         });
 
         /* ------------------------------
-           Build jsPsych trials
-        ------------------------------ */
-        const trials = randomized_sets.map(t => ({
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<img src="${t.participant_img}" style="max-width:512px; max-height:512px;">`,
-            choices: "NO_KEYS",
 
-            data: {
-                trial_id: t.id,
-                participant_img: t.participant_img,
-                left_img: t.left_img,
-                right_img: t.right_img
-            },
+   Build jsPsych trials
 
-            on_load: () => {
-                // Update experimenter window for this trial
-                controlWindow.postMessage({
-                    type: "update_trial",
+------------------------------ */
+
+        function buildTrials(block) {
+
+            return block.map(t => ({
+
+                type: jsPsychHtmlKeyboardResponse,
+
+                stimulus: `<img src="${t.participant_img}" style="max-width:512px; max-height:512px;">`,
+
+                choices: "NO_KEYS",
+
+                data: {
+
+                    trial_id: t.id,
+
+                    block: t.block,
+
+                    participant_img: t.participant_img,
+
                     left_img: t.left_img,
-                    right_img: t.right_img
-                }, "*");
-            }
-        }));
 
-        /* ------------------------------
-           Repetition
-        ------------------------------ */
+                    right_img: t.right_img,
 
-        const trials2 = randomized_sets2.map(t => ({
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<img src="${t.participant_img}" style="max-width:512px; max-height:512px;">`,
-            choices: "NO_KEYS",
+                    A_side: t.A_side
 
-            data: {
-                trial_id: t.id,
-                participant_img: t.participant_img,
-                left_img: t.left_img,
-                right_img: t.right_img
-            },
+                },
 
-            on_load: () => {
-                // Update experimenter window for this trial
-                controlWindow.postMessage({
-                    type: "update_trial",
-                    left_img: t.left_img,
-                    right_img: t.right_img
-                }, "*");
-            }
-        }));
+                on_load: () => {
 
-        //split trials for breaks
+                    controlWindow.postMessage({
 
-        const mid1 = Math.floor(trials.length / 2);
-        const mid2 = Math.floor(trials2.length / 2);
+                        type: "update_trial",
 
-        const trials_first_half = trials.slice(0, mid1);
-        const trials_second_half = trials.slice(mid1);
+                        left_img: t.left_img,
 
-        const trials2_first_half = trials2.slice(0, mid2);
-        const trials2_second_half = trials2.slice(mid2);
+                        right_img: t.right_img
 
+                    }, "*");
 
+                }
 
+            }));
 
+        }
+
+        // Build four blocks
+
+        const trials1 = buildTrials(blocks[0]);
+
+        const trials2 = buildTrials(blocks[1]);
+
+        const trials3 = buildTrials(blocks[2]);
+
+        const trials4 = buildTrials(blocks[3]);
 
         /* ------------------------------
            End trial
@@ -361,23 +390,69 @@
             type: jsPsychPreload,
             images: trial_sets.flatMap(t => [
                 t.participant_img,
-                t.left_img,
-                t.right_img
+                t.A_img,
+                t.B_img
             ])
         };
 
         /* ------------------------------
            Instructions
         ------------------------------ */
-        const instructions = {
+        const get_started = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
-            <h2>Instructions</h2>
-            
             <p>Press SPACE to begin the experiment.</p>
         `,
             choices: [" "]
         };
+
+        /* ------------------------------
+           Instructions
+        ------------------------------ */
+
+        const instructions = makeBreakTrial({
+            id: 1000,
+            stimulus: `<div style="text-align: left; font-size: 24px; line-height: 1;">
+            <h2>Instructions</h2>
+            
+            <p>During this experiment you will be presented with a series of trials, each containing one color painting displayed on the screen in front of you, and two texture paintings to touch, one in each of the boxes on either side of the screen. Your task will be to touch the two texture paintings and determine which one best matches the color painting on the screen.</p>
+            <p>At the start of each trial, I will place a texture painting in each of the two boxes in front of you, one in the box to your right and one in the box to your left. The boxes have curtains so that you won’t be able to see the textures.</p>
+            </div>`,
+            choices: "NO_KEYS",
+            left_img: "images/practiceA.png",
+            right_img: "images/practiceB.png"
+        });
+
+        const welcome = makeBreakTrial({
+            id: 1000,
+            stimulus: `<div>
+            <h2>Welcome!</h2></div>`,
+            choices: "NO_KEYS",
+            left_img: "images/practiceA.png",
+            right_img: "images/practiceB.png"
+        });
+
+        const example = makeBreakTrial({
+            id: 1001,
+            stimulus: `<img src="images/C_practice.png" style="max-width:512px; max-height:512px;">`,
+            choices: "NO_KEYS",
+            left_img: "images/practiceA.png",
+            right_img: "images/practiceB.png"
+        });
+
+        const begin = makeBreakTrial({
+            id: 1000,
+            stimulus: `<div style="text-align: left; font-size: 24px; line-height: 1;">
+            <p>We will now begin the experimental trials. There are 4 blocks of trials. You will be notified when you have completed each block and you may take breaks when you need to.</p>
+            <p>Do you have any questions?</p>
+            </div>`,
+            choices: "NO_KEYS",
+            left_img: "images/practiceA.png",
+            right_img: "images/practiceB.png"
+        });
+
+
+
 
         /* ------------------------------
            Debrief
@@ -407,25 +482,29 @@
         ------------------------------ */
         const timeline = [
             preload,
-            instructions,
+            get_started,
             openControlWindow,
             {
                 type: jsPsychFullscreen,
                 fullscreen_mode: true
             },
-            //...trials_first_half,
-            ...withITI(trials_first_half, iti),
+            welcome,
+            example,
+            begin,
+            // Block 1
+            ...withITI(trials1, iti),
             break1,
-            //...trials_second_half,
-            ...withITI(trials_second_half, iti),
 
+            // Block 2
+            ...withITI(trials2, iti),
             break2,
 
-            //...trials2_first_half,
-            ...withITI(trials2_first_half, iti),
+            // Block 3
+            ...withITI(trials3, iti),
             break3,
-            //...trials2_second_half,
-            ...withITI(trials2_second_half, iti),
+
+            // Block 4
+            ...withITI(trials4, iti),
             end,
             save_data,
             thank_you
