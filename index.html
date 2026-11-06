@@ -228,7 +228,6 @@
         const blocks = [];
 
         for (let block = 1; block <= 4; block++) {
-
             // Randomize trial order
             const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
             const block_trials = randomized_sets.map(t => ({
@@ -298,63 +297,35 @@
         });
 
         /* ------------------------------
-
-   Build jsPsych trials
-
------------------------------- */
-
+        Build jsPsych trials
+        ------------------------------ */
         function buildTrials(block) {
-
             return block.map(t => ({
-
                 type: jsPsychHtmlKeyboardResponse,
-
                 stimulus: `<img src="${t.participant_img}" style="max-width:512px; max-height:512px;">`,
-
                 choices: "NO_KEYS",
-
                 data: {
-
                     trial_id: t.id,
-
                     block: t.block,
-
                     participant_img: t.participant_img,
-
                     left_img: t.left_img,
-
                     right_img: t.right_img,
-
                     A_side: t.A_side
-
                 },
-
                 on_load: () => {
-
                     controlWindow.postMessage({
-
                         type: "update_trial",
-
                         left_img: t.left_img,
-
                         right_img: t.right_img
-
                     }, "*");
-
                 }
-
             }));
-
         }
 
         // Build four blocks
-
         const trials1 = buildTrials(blocks[0]);
-
         const trials2 = buildTrials(blocks[1]);
-
         const trials3 = buildTrials(blocks[2]);
-
         const trials4 = buildTrials(blocks[3]);
 
         /* ------------------------------
