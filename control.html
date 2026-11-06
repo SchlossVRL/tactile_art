@@ -10,11 +10,33 @@
             margin: 0;
         }
 
-        .container {
+        /*.container {
             display: flex;
             justify-content: space-around;
             align-items: center;
             height: 100vh;
+        }*/
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .instruction {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 25px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex: 1;
+            width: 100%;
         }
 
         .option {
@@ -41,38 +63,76 @@
 
 <body>
 
-    <div class="container">
-        <div class="option">
-            <p class="option-label">Left</p>
-            <img id="left" onclick="sendResponse('left')">
+    <div class="page-container">
+
+        <!-- Shared instruction above both images -->
+
+        <div class="instruction">
+
+            Select the texture painting that best matches the color painting.
+
         </div>
 
-        <div class="option">
-            <p class="option-label">Right</p>
-            <img id="right" onclick="sendResponse('right')">
+        <div class="container">
+
+            <div class="option">
+
+                <p class="option-label">Left</p>
+
+                <img id="left" onclick="sendResponse('left')">
+
+            </div>
+
+            <div class="option">
+
+                <p class="option-label">Right</p>
+
+                <img id="right" onclick="sendResponse('right')">
+
+            </div>
+
         </div>
+
     </div>
 
     <script>
+
         /* ------------------------------
+
            Receive trial updates
+
         ------------------------------ */
+
         window.addEventListener("message", (event) => {
+
             if (event.data.type === "update_trial") {
+
                 document.getElementById("left").src = event.data.left_img;
+
                 document.getElementById("right").src = event.data.right_img;
+
             }
+
         });
 
         /* ------------------------------
+
            Send responses
+
         ------------------------------ */
+
         function sendResponse(direction) {
+
             window.opener.postMessage(
+
                 { type: "response", value: direction },
+
                 "*"
+
             );
+
         }
+
     </script>
 
 </body>
