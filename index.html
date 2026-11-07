@@ -163,7 +163,7 @@
         const break1 = makeBreakTrial({
             id: 501,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
-                You have completed block 1 of 4. You may take a short break before continuing the experiment.
+                You have completed block 1 of 3. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break_1.png",
             right_img: "images/continue.png"
@@ -172,20 +172,20 @@
         const break2 = makeBreakTrial({
             id: 502,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
-                You have completed block 2 of 4. You may take a short break before continuing the experiment.
+                You have completed block 2 of 3. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break_2.png",
             right_img: "images/continue.png"
         });
 
-        const break3 = makeBreakTrial({
+        /*const break3 = makeBreakTrial({
             id: 503,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 You have completed block 3 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break_3.png",
             right_img: "images/continue.png"
-        });
+        });*/
 
         /* ------------------------------
            End
@@ -227,7 +227,7 @@
 
         const blocks = [];
 
-        for (let block = 1; block <= 4; block++) {
+        for (let block = 1; block <= 3; block++) {
             // Randomize trial order
             const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
             const block_trials = randomized_sets.map(t => ({
@@ -237,27 +237,29 @@
             blocks.push(block_trials);
         }
 
-        // Balance A/B sides across four blocks
+        // Balance A/B sides across three blocks
 
         trial_sets.forEach(t => {
 
-            // Each painting gets A on the left twice and right twice
+            // Each painting gets A on the left twice and right once
             const side_assignments = jsPsych.randomization.shuffle([
-                "left", "left", "right", "right"
+                "left", "left", "right"
             ]);
 
             blocks.forEach((block, index) => {
                 const trial = block.find(bt => bt.id === t.id);
-                trial.A_side = side_assignments[index];
-                trial.left_img = trial.A_side === "left" ? t.A_img : t.B_img;
-                trial.right_img = trial.A_side === "left" ? t.B_img : t.A_img;
+                trial.exp_side = side_assignments[index];
+                trial.left_img = trial.exp_side === "left" ? t.A_img : t.B_img;
+                trial.right_img = trial.exp_side === "left" ? t.B_img : t.A_img;
             });
         });
+
+
 
         // Check side balance
         trial_sets.forEach(t => {
             const sides = blocks.map(block =>
-                block.find(bt => bt.id === t.id).A_side
+                block.find(bt => bt.id === t.id).exp_side
             );
             console.log(
                 `Painting ${t.id}:`,
@@ -267,6 +269,8 @@
             );
         });
 
+
+
         /* ------------------------------
            Open experimenter window
         ------------------------------ */
@@ -274,7 +278,7 @@
 
         const openControlWindow = {
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: "<p>Press SPACE to start.</p>",
+            stimulus: "<p>Press SPACE to open the control window.</p>",
             choices: [" "],
             on_finish: () => {
                 controlWindow = window.open(
@@ -310,7 +314,7 @@
                     participant_img: t.participant_img,
                     left_img: t.left_img,
                     right_img: t.right_img,
-                    A_side: t.A_side
+                    exp_side: t.exp_side
                 },
                 on_load: () => {
                     controlWindow.postMessage({
@@ -322,11 +326,10 @@
             }));
         }
 
-        // Build four blocks
+        // Build three blocks
         const trials1 = buildTrials(blocks[0]);
         const trials2 = buildTrials(blocks[1]);
         const trials3 = buildTrials(blocks[2]);
-        const trials4 = buildTrials(blocks[3]);
 
         /* ------------------------------
            End trial
@@ -399,8 +402,8 @@
             stimulus: `<div>
             <h2>Welcome!</h2></div>`,
             choices: "NO_KEYS",
-            left_img: "images/practiceA.png",
-            right_img: "images/practiceB.png"
+            left_img: "images/welcome.png",
+            right_img: "images/continue.png"
         });
 
         const example = makeBreakTrial({
@@ -414,12 +417,12 @@
         const begin = makeBreakTrial({
             id: 1000,
             stimulus: `<div style="text-align: left; font-size: 24px; line-height: 1;">
-            <p>We will now begin the experimental trials. There are 4 blocks of trials. You will be notified when you have completed each block and you may take breaks when you need to.</p>
+            <p>Great! We are now ready to begin the experimental trials. There are 3 blocks of trials that will take about 20 minutes to complete. I will notify you when you have completed each block.</p>
             <p>Do you have any questions?</p>
             </div>`,
             choices: "NO_KEYS",
-            left_img: "images/practiceA.png",
-            right_img: "images/practiceB.png"
+            left_img: "images/get_ready.png",
+            right_img: "images/begin.png"
         });
 
 
@@ -472,10 +475,7 @@
 
             // Block 3
             ...withITI(trials3, iti),
-            break3,
 
-            // Block 4
-            ...withITI(trials4, iti),
             end,
             save_data,
             thank_you
