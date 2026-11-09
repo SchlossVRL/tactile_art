@@ -444,11 +444,19 @@
         /* ------------------------------
            Save Data
         ------------------------------ */
+        /* Pipes:
+
+        4sVV4MJs6b7m = test rep
+        DWz5mrraLU4W = lab pilot
+        *** = data collection 1
+
+        */
+
         const save_data = {
             type: jsPsychPipe,
             action: "save",
             //experiment_id: "IMErtV4pGj6m",
-            experiment_id: "4sVV4MJs6b7m",
+            experiment_id: "DWz5mrraLU4W",
             filename: filename,
             data_string: () => jsPsych.data.get().csv()
         };
