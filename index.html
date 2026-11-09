@@ -163,7 +163,7 @@
         const break1 = makeBreakTrial({
             id: 501,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
-                You have completed block 1 of 3. You may take a short break before continuing the experiment.
+                You have completed block 1 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break_1.png",
             right_img: "images/continue.png"
@@ -172,20 +172,20 @@
         const break2 = makeBreakTrial({
             id: 502,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
-                You have completed block 2 of 3. You may take a short break before continuing the experiment.
+                You have completed block 2 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break_2.png",
             right_img: "images/continue.png"
         });
 
-        /*const break3 = makeBreakTrial({
+        const break3 = makeBreakTrial({
             id: 503,
             stimulus: `<div style="font-size: 36px; line-height: 1.5; color: black;">
                 You have completed block 3 of 4. You may take a short break before continuing the experiment.
             </div>`,
             left_img: "images/break_3.png",
             right_img: "images/continue.png"
-        });*/
+        });
 
         /* ------------------------------
            End
@@ -227,7 +227,7 @@
 
         const blocks = [];
 
-        for (let block = 1; block <= 3; block++) {
+        for (let block = 1; block <= 4; block++) {
             // Randomize trial order
             const randomized_sets = jsPsych.randomization.shuffle(trial_sets);
             const block_trials = randomized_sets.map(t => ({
@@ -243,7 +243,7 @@
 
             // Each painting gets A on the left twice and right once
             const side_assignments = jsPsych.randomization.shuffle([
-                "left", "left", "right"
+                "left", "left", "right", "right"
             ]);
 
             blocks.forEach((block, index) => {
@@ -330,6 +330,7 @@
         const trials1 = buildTrials(blocks[0]);
         const trials2 = buildTrials(blocks[1]);
         const trials3 = buildTrials(blocks[2]);
+        const trials4 = buildTrials(blocks[3]);
 
         /* ------------------------------
            End trial
@@ -417,7 +418,7 @@
         const begin = makeBreakTrial({
             id: 1000,
             stimulus: `<div style="text-align: left; font-size: 24px; line-height: 1;">
-            <p>Great! We are now ready to begin the experimental trials. There are 3 blocks of trials that will take about 20 minutes to complete. I will notify you when you have completed each block.</p>
+            <p>Great! We are now ready to begin the experimental trials. There are 4 blocks of trials that will take about 30 minutes to complete. I will notify you when you have completed each block.</p>
             <p>Do you have any questions?</p>
             </div>`,
             choices: "NO_KEYS",
@@ -478,6 +479,10 @@
 
             // Block 3
             ...withITI(trials3, iti),
+            break3,
+
+            // Block 4
+            ...withITI(trials4, iti),
 
             end,
             save_data,
